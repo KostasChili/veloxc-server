@@ -13,7 +13,16 @@ const shopSchema = new mongoose.Schema({
     description:{
         type:String,
         required:true
-    }
+    },
+    appointments:[
+        {
+            'customerName':String,
+            'service':String,
+            'date':String,
+            'active':{type:Boolean,
+            default:true }
+        },
+    ]
    
 });
 

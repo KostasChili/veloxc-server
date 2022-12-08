@@ -17,7 +17,7 @@ console.log(process.env.NODE_ENV);
 
 app.use(reqlogger);
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(express.json());
 
@@ -30,7 +30,8 @@ app.use('/',express.static(path.join(__dirname,'public'))); //where express will
 app.use('/',require('./routes/root'));
 
 app.use('/users',require('./routes/userRoutes'));
-app.use('/shops',require('./routes/shopRouter'));
+app.use('/shops',require('./routes/shopRoutes'));
+app.use('/shops/:id/appointments',require('./routes/appointmentRoutes'))
 
 app.all('*',(req,res)=>{
     res.status(404)

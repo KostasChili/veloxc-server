@@ -1,24 +1,25 @@
 const User = require("../models/User");
 const Shop = require("../models/Shop");
 const asyncHandler = require("express-async-handler");
-const { endOfISOWeekYear } = require("date-fns");
-const { findById } = require("../models/User");
+const { differenceInCalendarQuarters } = require("date-fns");
 
 //@desc Get all Shops
 //@route GET /shops
 //@access Private
 
+
+//TODO implement roles check ! if admin return all shops if shopkeeper check his id and return HIS shops
 const getAllShops = asyncHandler(async (req, res) => {
   const shops = await Shop.find().lean();
   //if no shops are found
   if (!shops?.length) {
     return res.status(400).json({ message: "No shops found" });
   }
-  //populate shopkeeper in each note before sending the response
+  //populate shopkeeper in each shop before sending the response
   const shopsWithKeepers = await Promise.all(
     shops.map(async (shop) => {
-      const user = await User.findById(note.user).lean().exec();
-      return { ...note, username: user.username };
+      const user = await User.findById(shop.user).lean().exec();
+      return { ...shop, username: user.username };
     })
   );
   res.json(shopsWithKeepers);
@@ -40,6 +41,14 @@ const createShop = asyncHandler(async (req, res) => {
     return res
       .status(400)
       .json({ message: `No shopkeeper with id : ${user} exists` });
+  }
+  //verify user is shopkeeper (roles:2000)
+  if(!shopkeeper.roles.includes('2000')){
+    //if not a shopkeeper verify he is atleast an admin
+    if(!shopkeeper.roles.includes('1000'))
+    {
+      return res.status(401).json({message:"Unauthorized"});
+    }
   }
   //check for duplicate
   const duplicate = await Shop.findOne({ title }).lean().exec();
