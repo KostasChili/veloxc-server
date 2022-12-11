@@ -13,20 +13,25 @@ const { rawListeners } = require("../models/User");
 //shopkeeper has access to his shops and can see all appointments for each shop
 //a user can see only his appointments for each shop
 const getAllApointments = asyncHandler(async(req,res)=>{
-    //front end request containing shop id
-        const {id} = req.body;
+    //getting the url from the path name
+        var url = req._parsedOriginalUrl.path;
+        url = url.replaceAll("/","");
+        url = url.replace("shops","");
+        url = url.replace("appointments","");
+        const id = url;
         //on future we also recieve users id and check if he has access
         //verify data
         if(!id) return res.status(400).json({message:'Shop Id required'});
         //find the shop
-        const shop = await Shop.findById(id).select('-description').exec();
+        const shop = await Shop.findById(id).select('+appointments').exec();
         //verify
         if(!shop) return res.status(400).json({message:`Shop with id ${id} was not found`});
         //verify dates exists
         if(!shop?.appointments?.length) {
             return res.status(400).json({message:`No appointments on shop with id${id}`});
         }
-        res.json(shop); //return the shop with all fields (no description) will have to check later
+        console.log(shop.appointments);
+        res.json(shop.appointments); //return the shop with all fields (no description) will have to check later
 
 
 });
@@ -102,14 +107,14 @@ const updateAppointment = asyncHandler(async(req,res)=>{
         return res.status(400).json({message:`Appointment under name ${customerName}, for ${service} with date of ${date} does not exists on shop ${shop.title}`})
     }
     //update the appointment
-    customerAppointment.customerName = newCustomerName;
-    customerAppointment.service = newService;
-    customerAppointment.date = newDate;
-    customerAppointment.active = active;
-    const appId = customerAppointment._id;
-    console.log(customerAppointment);
-    console.log(appId);
-    res.json({message:'ok'})
+    // customerAppointment.customerName = newCustomerName;
+    // customerAppointment.service = newService;
+    // customerAppointment.date = newDate;
+    // customerAppointment.active = active;
+    // const appId = customerAppointment._id;
+    // console.log(customerAppointment);
+    // console.log(appId);
+    // res.json({message:'ok'})
 
 });
 
