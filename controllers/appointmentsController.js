@@ -1,135 +1,112 @@
 const User = require("../models/User");
 const Shop = require("../models/Shop");
+const Appointment = require('../models/Appointment');
 const asyncHandler = require("express-async-handler");
-const { json } = require("express");
-const { rawListeners } = require("../models/User");
+const { findByIdAndDelete, findById } = require("../models/User");
+
 
 
 //@desc Get all appointments
 //@route GET /shops/id/appointments
 //@access Private
 
-//admin has access to all shops and can see all appointments for each shop
-//shopkeeper has access to his shops and can see all appointments for each shop
-//a user can see only his appointments for each shop
-const getAllApointments = asyncHandler(async(req,res)=>{
-    //getting the url from the path name
-        var url = req._parsedOriginalUrl.path;
-        url = url.replaceAll("/","");
-        url = url.replace("shops","");
-        url = url.replace("appointments","");
-        const id = url;
-        //on future we also recieve users id and check if he has access
-        //verify data
-        if(!id) return res.status(400).json({message:'Shop Id required'});
-        //find the shop
-        const shop = await Shop.findById(id).select('+appointments').exec();
-        //verify
-        if(!shop) return res.status(400).json({message:`Shop with id ${id} was not found`});
-        //verify dates exists
-        if(!shop?.appointments?.length) {
-            return res.status(400).json({message:`No appointments on shop with id${id}`});
-        }
-        console.log(shop.appointments);
-        res.json(shop.appointments); //return the shop with all fields (no description) will have to check later
-
-
+const getAllAppointments = asyncHandler(async(req,res)=>{
+    const result = await Appointment.find().lean().exec();
+    if(!result){
+        return res.status(400).json({message:'no appointments found'})
+    }
+    res.json(result);
 });
 
-//@desc Create an appointment
-//@route POST /shops/id/appointments
+//@desc Create new appointment
+//@route post /shops/id/appointments
 //@access Private
 
-//an appointment can be created by a user or injected by a shopkeeper or an admin
 const createAppointment = asyncHandler(async(req,res)=>{
-    const{customerName,service,date,id} = req.body;
-    //verify
-     if(!customerName || !service || !date || !id)
-     {
-        return  res.status(400).json({message:'All fields required'});
-     }
-     //find shop
-     const shop = await Shop.findById(id).exec();
-     //verify shop exists
-     if(!shop) return res.status(400).json({message:`No shop under id ${id}`});
-     //would be a good idea to verify later on 
-     //1. there is no other appointment at the same day and time
-     //2. the customerName has not allready set the same appointment (in case something goes bad and they retry)
-     //3. every appointment should be assigned a uniq id (uuid) which can be used later on 
-     const appointment = {
+    const {id,customerName,service,date} = req.body;
+    if(!id || !customerName || !service || !date)
+    {
+        return res.status(400).json({message:'all fields are required'})
+    }
+    const shop = await Shop.findById(id).exec();
+    if(!shop){
+        return res.status(400).json({message:`no shop under id ${id}`})
+    }
+    const appointment = new Appointment ({
+        shopId:id,
         customerName,
         service,
-        date
-     };
-     shop.appointments.push(appointment);
-    const result = await shop.save();
-    if(!result){
-        return res.status(400).json({message:'invalid appointment info'});
+        date,
+    })
+    shop.appointments.push(appointment);
+    
+    const appResult = await appointment.save();
+    const shopResult = await shop.save();
+    if(!appResult || !shopResult)
+    {
+        return res.status(400).json({message:'invalid data'});
     }
-    res.json({message:`Appointment was created successfully at ${shop.title}`});
-
-
+    res.json({message:`appointment created successfully`});
 });
 
 //@desc Update an appointment
 //@route PATCH /shops/id/appointments
 //@access Private
 
-
 const updateAppointment = asyncHandler(async(req,res)=>{
-    //we need a shop id a customer name and a date and service
-    const{id,customerName,date,service,newCustomerName,newDate,newService,active}= req.body; 
-    //verify
-    if( !id || !customerName || !date || !service || !newCustomerName || !newDate || !newService )
+    const {id,shopId,newCustomerName,newService,newDate,newActive} = req.body;
+    if(!id || !shopId)
     {
-        return res.status(400).json({message:'All fields are required'});
+        return res.status(400).json({message:'all fields required'});
     }
-    //find the shop
-    const shop = await Shop.findById(id).select('-description').exec();
-    //verify shop
+   const appointment = await Appointment.findById(id)
+    if(!appointment)
+    {
+        return res.status(400).json({message:'all fields required'});
+    }
+    if(newCustomerName) appointment.customerName=newCustomerName;
+    if(newService) appointment.service=newService;
+    if(newDate) appointment.date=newDate;
+    if(newActive) appointment.active = newActive;
+    const shop = await Shop.findByIdAndUpdate(shopId,{$where:{appointments:id},appointment});
     if(!shop)
     {
-        return res.status(400).json({message:`No shop under id ${id} was found`})
+        return res.status(400).json({message:"bad shop info"});
     }
-    //verify appointments exists on this shop
-    if(!shop.appointments){
-        return res.status(400).json({message:`No appointments on ${shop.title} shop`});
+    const result = await appointment.update();
+    if(!result){
+        return res.status(400).json({message:"bad appointment info"});
     }
-    //if appointments exists find the appointments with the customers name
-    const customerAppointment = shop.appointments.filter(appointment=>{
-         if(appointment.customerName===customerName && appointment.service===service && appointment.date === date)
-         {
-             return appointment
-         }
-    });
-    //verify the appointment exists
-    if(!customerAppointment.length){
-        return res.status(400).json({message:`Appointment under name ${customerName}, for ${service} with date of ${date} does not exists on shop ${shop.title}`})
-    }
-    //update the appointment
-    // customerAppointment.customerName = newCustomerName;
-    // customerAppointment.service = newService;
-    // customerAppointment.date = newDate;
-    // customerAppointment.active = active;
-    // const appId = customerAppointment._id;
-    // console.log(customerAppointment);
-    // console.log(appId);
-    // res.json({message:'ok'})
-
+    res.json({message:`updated appointment`})
 });
 
 //@desc Delete an appointment
 //@route DELETE /shops/id/appointments
 //@access Private
 
-
 const deleteAppointment = asyncHandler(async(req,res)=>{
+    const {id,shopId} = req.body;
+    if(!id || !shopId)
+    {
+        return res.status(400).json({message:'id required'})
+    }
+    const shop = await Shop.findByIdAndUpdate(shopId,{$pull:{appointments:id}});
+    if(!shop){
+       return res.status(400).json({message:`no shop was found under id ${shopId}`})
+    }
+    const appointment  = await Appointment.findByIdAndDelete(id);
+    if(!appointment)
+    {
+       return  res.status(400).json({message:`no appointment was found under id ${id}`})
+    }
+    res.json({message:`Appointment under name ${appointment.customerName} for ${appointment.service} was deleted successfully`});
 
 });
 
+
 module.exports = {
-    getAllApointments,
+    getAllAppointments,
     createAppointment,
     updateAppointment,
     deleteAppointment
-    }
+}

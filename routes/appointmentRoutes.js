@@ -4,10 +4,11 @@ const appointmentsController = require('../controllers/appointmentsController');
 
 
 router.route('/')
-.get(appointmentsController.getAllApointments)
+.get(appointmentsController.getAllAppointments)
 .post(appointmentsController.createAppointment)
 .patch(appointmentsController.updateAppointment)
 .delete(appointmentsController.deleteAppointment)
+
 
 
 module.exports = router;

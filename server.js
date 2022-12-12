@@ -31,7 +31,7 @@ app.use('/',require('./routes/root'));
 
 app.use('/users',require('./routes/userRoutes'));
 app.use('/shops',require('./routes/shopRoutes'));
-app.use('/shops/:id/appointments',require('./routes/appointmentRoutes'))
+app.use('/shops/appointments',require('./routes/appointmentRoutes'))
 
 app.all('*',(req,res)=>{
     res.status(404)

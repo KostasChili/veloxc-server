@@ -24,9 +24,9 @@ const getAllUsers = asyncHandler(async(req,res)=>{
 //@access Private
 
 const createUser = asyncHandler(async(req,res)=>{
-    const {username,password,roles} = req.body;
+    const {username,firstname,lastname,password,email} = req.body;
     //verify data
-    if(!username || !password || !Array.isArray(roles) || !roles.length)
+    if(!username ||!firstname ||!lastname || !password || !email)
     {
         return res.status(400).json({message:'All fields required'}); //400 bad request
     }
@@ -39,7 +39,7 @@ const createUser = asyncHandler(async(req,res)=>{
     //if all good HASH the password
     const hashedPassword = await bcrypt.hash(password,10);
     //create the userObj
-    const userObj = {username,password:hashedPassword,roles};
+    const userObj = {username,password:hashedPassword,email,roles:['2000'],firstname,lastname};
     //create and store the user
     const user = await User.create(userObj);
     //check if user was created
@@ -57,9 +57,10 @@ const createUser = asyncHandler(async(req,res)=>{
 //@access Private
 
 const updateUser = asyncHandler(async(req,res)=>{
-    const {id,username,roles,password} = req.body;
+    const {id,username,password,firstname,lastname,email} = req.body;
+    console.log(id,username,password,firstname,lastname,email)
     //verify data
-    if(!id || !username || !Array.isArray(roles) || !roles.length){
+    if(!id || !username || !firstname || !lastname || !email){
         return res.status(400).json({message:'All fields required'});
     }
     //find user

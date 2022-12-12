@@ -10,19 +10,19 @@ const { differenceInCalendarQuarters } = require("date-fns");
 
 //TODO implement roles check ! if admin return all shops if shopkeeper check his id and return HIS shops
 const getAllShops = asyncHandler(async (req, res) => {
-  const shops = await Shop.find().lean();
+  const shops = await Shop.find().lean().populate('username');
   //if no shops are found
   if (!shops?.length) {
     return res.status(400).json({ message: "No shops found" });
   }
+
   //populate shopkeeper in each shop before sending the response
-  const shopsWithKeepers = await Promise.all(
-    shops.map(async (shop) => {
-      const user = await User.findById(shop.user).lean().exec();
-      return { ...shop, username: user.username };
-    })
-  );
-  res.json(shopsWithKeepers);
+  // const shopsWithUser = await Promise.all(shops.map(async (shop)=>{
+  //   const user = await User.findById(shop.user).lean().exec();
+  //   return {...shop,username:user.username};
+  //  }))
+
+res.json(shops);
 });
 
 //@desc create new Shop
@@ -31,6 +31,7 @@ const getAllShops = asyncHandler(async (req, res) => {
 
 const createShop = asyncHandler(async (req, res) => {
   const { user, title, description } = req.body;
+  console.log(user,title,description)
   //verify data
   if (!user || !title || !description) {
     return res.status(400).json({ message: "All input fields are required" });
@@ -74,9 +75,9 @@ const createShop = asyncHandler(async (req, res) => {
 //@access Private
 
 const updateShop = asyncHandler(async (req, res) => {
-  const { id, user, title, description } = req.body;
+  const { id, title, description } = req.body;
   //verify data
-  if (!id || !user || !title || !description) {
+  if (!id || !title || !description) {
     return res.status(400).json({ message: "id and user are required fields" });
   }
   //confirm the Shop exists
@@ -91,7 +92,6 @@ const updateShop = asyncHandler(async (req, res) => {
       .status(409)
       .json({ message: `Shop with title ${title} allready exists` });
   }
-  shop.user = user;
   shop.title = title;
   shop.description = description;
 

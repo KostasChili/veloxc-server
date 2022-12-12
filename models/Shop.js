@@ -16,12 +16,9 @@ const shopSchema = new mongoose.Schema({
     },
     appointments:[
         {
-            'customerName':String,
-            'service':String,
-            'date':String,
-            'active':{type:Boolean,
-            default:true }
-        },
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Appointment'
+        }
     ]
    
 });
