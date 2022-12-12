@@ -1,7 +1,9 @@
 const User = require("../models/User");
 const Shop = require("../models/Shop");
 const asyncHandler = require("express-async-handler");
-const { differenceInCalendarQuarters } = require("date-fns");
+
+
+
 
 //@desc Get all Shops
 //@route GET /shops
@@ -10,7 +12,7 @@ const { differenceInCalendarQuarters } = require("date-fns");
 
 //TODO implement roles check ! if admin return all shops if shopkeeper check his id and return HIS shops
 const getAllShops = asyncHandler(async (req, res) => {
-  const shops = await Shop.find().lean().populate('username');
+  const shops = await Shop.find().lean().populate('user');
   //if no shops are found
   if (!shops?.length) {
     return res.status(400).json({ message: "No shops found" });
