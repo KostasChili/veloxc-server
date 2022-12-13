@@ -3,13 +3,16 @@ const router = express.Router();
 const shopController = require('../controllers/shopsController');
 const verifyJWT = require('../middleware/verifyJWT');
 
-router.use(verifyJWT);
+router.route('/public/:id')
+.get(shopController.getPublicShopPage)
+.post(shopController.makeAppointment);
+
 
 router.route('/')
-.get(shopController.getAllShops)
-.post(shopController.createShop)
-.patch(shopController.updateShop)
-.delete(shopController.deleteShop)
+.get(verifyJWT,shopController.getAllShops)
+.post(verifyJWT,shopController.createShop)
+.patch(verifyJWT,shopController.updateShop)
+.delete(verifyJWT,shopController.deleteShop)
 
 
 module.exports = router;

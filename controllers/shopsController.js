@@ -1,9 +1,57 @@
 const User = require("../models/User");
 const Shop = require("../models/Shop");
 const asyncHandler = require("express-async-handler");
+const Appointment = require("../models/Appointment");
 
 
 
+
+
+//@desc Get public shop page
+//@rout GET /shops/public/id
+//@access public
+
+const getPublicShopPage = asyncHandler(async(req,res)=>{
+  const {id} = req.params;
+  if(!id) return res.status(400).json({message:'Shop id required'});
+  const shop = await Shop.findById(id).select('-user -appointments').lean().exec();
+  if(!shop) return res.status(400).json({message:`no shop found under id ${id}`});
+  console.log(shop);
+  res.json({...shop});
+});
+
+//@desc Make appointment through public page
+//@route POST /shop/public/id
+//@access public
+
+const makeAppointment = asyncHandler(async(req,res)=>{
+    const {id} = req.params;
+    const {name,lastName,service,date} = req.body;
+    if(!id || !name || !lastName || !service || !date) return res.status(400).json({message:' All fields required'});
+    console.log('passed verification')
+    const shop = await Shop.findById(id);
+    if(!shop) return res.status(400).json({message:`no shop under id ${id}`});
+    console.log("shop found")
+    //TODO check if customers appointment allready exists
+    const customerInfo = {
+      shopId :id,
+      customerName:name+" "+lastName,
+      service,
+      date,
+      active:true
+    }
+    console.log("Appinfo created");
+    const appointment = await Appointment.create({...customerInfo});
+    console.log('app created')
+   
+    if(!appointment) res.status(400).json({message:'Invalid appointment data'});
+    shop.appointments.push(appointment);
+    const shopRes = await shop.save();
+    const appRes  = await appointment.save();
+    if(!shopRes || !appRes) return res.status(400).json({message:'Error creating appointment'});
+    res.json({message:`Appointment for ${customerName} for ${service} at ${date} created succesffuly`});
+
+})
 
 //@desc Get all Shops
 //@route GET /shops
@@ -126,5 +174,7 @@ module.exports = {
   getAllShops,
   createShop,
   updateShop,
-  deleteShop
+  deleteShop,
+  getPublicShopPage,
+  makeAppointment
 };
