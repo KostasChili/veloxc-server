@@ -112,9 +112,9 @@ const createShop = asyncHandler(async (req, res) => {
   const shop = await Shop.create({ user, title, description });
   //check if created successfully
   if (shop) {
-    return res
-      .status(201)
-      .json({ message: `Shop with title ${title} was created successfully` });
+    const publicLink = `http://localhost:3000/shops/public/${shop._id}`
+    await shop.publicLink.push(publicLink);
+    return res.status(201).json({ message: `Shop with title ${title} was created successfully` });
   } else {
     return res.status(400).json({ message: "Invalid Shop info" });
   }

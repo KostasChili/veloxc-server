@@ -19,7 +19,10 @@ const shopSchema = new mongoose.Schema({
             type:mongoose.Schema.Types.ObjectId,
             ref:'Appointment'
         }
-    ]
+    ],
+    publicLink:{
+        type:String
+    }
    
 });
 
