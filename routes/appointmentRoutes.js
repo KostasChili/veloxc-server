@@ -3,6 +3,8 @@ const router = express.Router();
 const appointmentsController = require('../controllers/appointmentsController');
 
 
+
+
 router.route('/')
 .get(appointmentsController.getAllAppointments)
 .post(appointmentsController.createAppointment)

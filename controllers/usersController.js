@@ -1,8 +1,6 @@
 const User = require('../models/User');
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcrypt');
-const { isAfter } = require('date-fns');
-const { deleteOne } = require('../models/User');
 
 
 //@desc GET all users
@@ -10,6 +8,11 @@ const { deleteOne } = require('../models/User');
 //@access Private
 
 const getAllUsers = asyncHandler(async(req,res)=>{
+   const userId = req._id;
+   if(!userId) return res.status(401).json({message:'Unauthorized. Login required'});
+   const user = await Users.findById(userId).exec();
+   if(!user) return res.status(400).json({message:'No such user in db'});
+   if(!user.roles.includes('1000')) return res.status(401).json({message:'Unauthorized. Admin login required'});
     const users = await User.find().select('-password').lean();
     //verify data
     if(!users?.length)
@@ -21,7 +24,7 @@ const getAllUsers = asyncHandler(async(req,res)=>{
 
 //@desc Create new User
 //@route POST /users
-//@access Private
+//@access Public
 
 const createUser = asyncHandler(async(req,res)=>{
     const {username,firstname,lastname,password,email} = req.body;
@@ -57,8 +60,12 @@ const createUser = asyncHandler(async(req,res)=>{
 //@access Private
 
 const updateUser = asyncHandler(async(req,res)=>{
+    const userId = req._id;
+    if(!userId) return res.status(401).json({message:'Unauthorized. Login required'});
+    const userReq = await Users.findById(userId).exec();
+    if(!userReq) return res.status(400).json({message:'No such user in db'});
+
     const {id,username,password,firstname,lastname,email} = req.body;
-    console.log(id,username,password,firstname,lastname,email)
     //verify data
     if(!id || !username || !firstname || !lastname || !email){
         return res.status(400).json({message:'All fields required'});
@@ -69,6 +76,8 @@ const updateUser = asyncHandler(async(req,res)=>{
     {
         return res.status(400).json({message:`User with id ${id} was not found`})
     }
+    //check if the user wants to change his info or if its an admin
+    if(user._id !== userId && !user.roles.includes('1000')) return res.status(401).json({message:'Unauthorized on this action'});
     //check for duplicate with new info
     const duplicate = await User.findOne({username}).lean().exec();
     //check if the duplicate is the same as the original user
@@ -96,6 +105,8 @@ const updateUser = asyncHandler(async(req,res)=>{
 //@access Private
 
 const deleteUser = asyncHandler(async(req,res)=>{
+    const userId = req._id;
+    if(!userId) return res.status(401).json({message:'Unathorized. Login required'})
     const {id} = req.body;
     //verify data
     if(!id)
@@ -108,6 +119,7 @@ const deleteUser = asyncHandler(async(req,res)=>{
     {
         return res.status(400).json({message:`No user was found for id : ${id}`});
     }
+    if(userId !== user._id ) return res.status(401).json({message:'Unathorized. Login required'});
     const result  = await user.deleteOne();
     const reply = `Username ${result.username} with id ${id} was deleted successfully`;
     res.json({message:reply});

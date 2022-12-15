@@ -6,6 +6,38 @@ const { findByIdAndDelete, findById } = require("../models/User");
 
 
 
+
+//@desc Make appointment through public page
+//@route POST /shop/public/id
+//@access public
+
+const makeAppointment = asyncHandler(async(req,res)=>{
+    const {id} = req.params;
+    const {name,lastName,service,date} = req.body;
+    if(!id || !name || !lastName || !service || !date) return res.status(400).json({message:' All fields required'});
+    const shop = await Shop.findById(id);
+    if(!shop) return res.status(400).json({message:`no shop under id ${id}`});
+    //TODO check if customers appointment allready exists
+    const customerInfo = {
+      shopId :id,
+      customerName:name+" "+lastName,
+      service,
+      date,
+      active:true
+    }
+    const appointment = await Appointment.create({...customerInfo});
+   
+    if(!appointment) res.status(400).json({message:'Invalid appointment data'});
+    shop.appointments.push(appointment);
+    const shopRes = await shop.save();
+    const appRes  = await appointment.save();
+    if(!shopRes || !appRes) return res.status(400).json({message:'Error creating appointment'});
+    res.json({message:`Appointment for ${customerName} for ${service} at ${date} created succesffuly`});
+
+})
+
+
+
 //@desc Get all appointments
 //@route GET /shops/id/appointments
 //@access Private
@@ -22,8 +54,11 @@ const getAllAppointments = asyncHandler(async(req,res)=>{
 //@route post /shops/id/appointments
 //@access Private
 
+
+
 const createAppointment = asyncHandler(async(req,res)=>{
     const {id,customerName,service,date} = req.body;
+   
     if(!id || !customerName || !service || !date)
     {
         return res.status(400).json({message:'all fields are required'})
@@ -108,5 +143,5 @@ module.exports = {
     getAllAppointments,
     createAppointment,
     updateAppointment,
-    deleteAppointment
+    deleteAppointment,
 }

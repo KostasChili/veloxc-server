@@ -9,7 +9,7 @@ router.route('/public/:id')
 
 
 router.route('/')
-.get(verifyJWT,shopController.getAllShops)
+.get(verifyJWT,shopController.getMyShops)
 .post(verifyJWT,shopController.createShop)
 .patch(verifyJWT,shopController.updateShop)
 .delete(verifyJWT,shopController.deleteShop)

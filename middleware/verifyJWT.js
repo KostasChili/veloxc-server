@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const logEvents = require('./logger');
 
 const verifyJWT = (req,res,next) =>{
     const authHeader = req.headers.authorization || req.headers.Authorization;
@@ -13,12 +12,16 @@ const verifyJWT = (req,res,next) =>{
         token,
         process.env.ACCESS_TOKEN_SECRET,
         (err,decoded)=>{
-            console.log('Verify JWT ERROR: ',err);
-            if(err) return res.status(403).json({message:'Forbiden'});
+            
+            if(err) {
+                console.log('Verify JWT ERROR: ',err);
+                return res.status(403).json({message:'Forbiden'});
+            }
+            
             req.user = decoded.UserInfo.username;
-            req._id = decoded.UserInfo._id;
+            req._id = decoded.UserInfo.userId;
             req.roles = decoded.UserInfo.roles;
-            console.log(req.user, req._id,req.roles)
+            // console.log(req.user, req._id,req.roles)
             next();        
         }
     )
