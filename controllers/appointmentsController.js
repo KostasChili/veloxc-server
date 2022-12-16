@@ -13,9 +13,8 @@ const asyncHandler = require('express-async-handler');
 //@access public
 
 const createAppointment = asyncHandler(async(req,res)=>{
-    const {id,customerName,service,date} = req.body;
-    console.log(id,customerName,service,date)
-    if(!id || !customerName || !service || !date)
+    const {id,customerName,service,date,time,email} = req.body;
+    if(!id || !customerName || !service || !date || !time || !email)
     {
         return res.status(400).json({message:'All fields required'});
     }
@@ -26,6 +25,8 @@ const createAppointment = asyncHandler(async(req,res)=>{
         customerName,
         service,
         date,
+        time,
+        email,
         active:true
     }
     const appointment = await Appointment.create(appointmentObj);

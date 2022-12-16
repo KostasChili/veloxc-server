@@ -14,6 +14,22 @@ const shopSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    tel:{
+        type:String,
+        required:true
+    },
+    email:{
+        type:String,
+        required:true
+    },
+    city:{
+        type:String,
+        required :true
+    },
+    address:{
+        type:String,
+        required :true
+    },
     appointments:[
         {
             type:mongoose.Schema.Types.ObjectId,

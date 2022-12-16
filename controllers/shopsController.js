@@ -39,7 +39,7 @@ const getMyShops = asyncHandler(async (req, res) => {
       const user = await User.findById(shop.user).lean().exec();
       return {...shop,shopkeeper:user.username}
     }));
-    return res.json(shopsWithUser);
+    return res.json({...shopsWithUser});
   }
   //if the user is not an admin return his shops if any
   const shops = await Shop.find({user:id}).lean().exec();
@@ -64,9 +64,9 @@ res.json(shopsWithUser);
 const createShop = asyncHandler(async (req, res) => {
   const id = req._id;
   if(!id) return res.status(401).json({message:'Unauthorized. Log in required'});
-  const {title, description } = req.body;
+  const {title, description,tel,email,city,address } = req.body;
   //verify data
-  if (!title || !description) {
+  if (!title || !description  || !tel || !email || !city || !address) {
     return res.status(400).json({ message: "All input fields are required" });
   }
   //check if user exists in db LATER : if user has roles shopkeeper
@@ -92,7 +92,7 @@ const createShop = asyncHandler(async (req, res) => {
       .json({ message: `Shop with title ${title} allready exists` });
   }
   //if not duplicate create and store the shop
-  const shop = await Shop.create({ user:id, title, description });
+  const shop = await Shop.create({ user:id, title, description,tel,email,city,address });
   //check if created successfully
   if (shop) {
     const publicLink = `http://localhost:3000/shops/public/${shop._id}`
@@ -111,9 +111,9 @@ const createShop = asyncHandler(async (req, res) => {
 const updateShop = asyncHandler(async (req, res) => {
   const userId = req._id;
   if(!userId) return res.status(401).json({message:'Unauthorized. Login required'});
-  const { id, title, description } = req.body;
+  const { id, title, description,tel,email,city,address } = req.body;
   //verify data
-  if (!id || !title || !description) {
+  if (!id || !title || !description || !tel || !email || !city || !address) {
     return res.status(400).json({ message: "id and user are required fields" });
   }
   //confirm the Shop exists
@@ -122,15 +122,13 @@ const updateShop = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: `No shop under id ${id} exists` });
   }
   if(userId !==shop.user.toString()) return res.status(401).json({message:'unauthorized on this action'});
-  //chech for duplicate title
-  const duplicate = await Shop.findOne({ title }).lean().exec();
-  if (duplicate && duplicate._id !== id) {
-    return res
-      .status(409)
-      .json({ message: `Shop with title ${title} allready exists` });
-  }
+
   shop.title = title;
   shop.description = description;
+  shop.tel = tel;
+  shop.email = email;
+  shop.cirt = city;
+  shop.address = address;
 
   const updatedShop = await shop.save();
   res.json({message:`Shop ${updatedShop.title} was successfully updated`});
@@ -181,7 +179,7 @@ const retrieveAppointments = asyncHandler (async(req,res)=>{
   return res.status(403).json({message:'Forbiden'});
   const package = {
     appointments : shop.appointments,
-    title : shop.title
+    title : shop.title,
   }
   res.json({...package});
 })
