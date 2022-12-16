@@ -1,11 +1,15 @@
 const express = require('express');
+const { verify } = require('jsonwebtoken');
 const router = express.Router();
 const shopController = require('../controllers/shopsController');
 const verifyJWT = require('../middleware/verifyJWT');
 
 router.route('/public/:id')
 .get(shopController.getPublicShopPage)
-.post(shopController.makeAppointment);
+
+router.route('/:id/appointments')
+.get(verifyJWT,shopController.retrieveAppointments)
+
 
 
 router.route('/')

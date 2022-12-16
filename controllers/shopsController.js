@@ -19,34 +19,7 @@ const getPublicShopPage = asyncHandler(async(req,res)=>{
   res.json({...shop});
 });
 
-//@desc Make appointment through public page
-//@route POST /shop/public/id
-//@access public
 
-const makeAppointment = asyncHandler(async(req,res)=>{
-    const {id} = req.params;
-    const {name,lastName,service,date} = req.body;
-    if(!id || !name || !lastName || !service || !date) return res.status(400).json({message:' All fields required'});
-    const shop = await Shop.findById(id);
-    if(!shop) return res.status(400).json({message:`no shop under id ${id}`});
-    //TODO check if customers appointment allready exists
-    const customerInfo = {
-      shopId :id,
-      customerName:name+" "+lastName,
-      service,
-      date,
-      active:true
-    }
-    const appointment = await Appointment.create({...customerInfo});
-   
-    if(!appointment) res.status(400).json({message:'Invalid appointment data'});
-    shop.appointments.push(appointment);
-    const shopRes = await shop.save();
-    const appRes  = await appointment.save();
-    if(!shopRes || !appRes) return res.status(400).json({message:'Error creating appointment'});
-    res.json({message:`Appointment for ${customerName} for ${service} at ${date} created succesffuly`});
-
-})
 
 //@desc Get all Shops for a specific user
 //@route GET /shops
@@ -189,11 +162,35 @@ const deleteShop = asyncHandler(async (req, res) => {
 
 });
 
+
+
+//@desc  route to retrive Appointments for a specific shop
+//@route  GET shops/public/appointmens
+//@access private
+
+const retrieveAppointments = asyncHandler (async(req,res)=>{
+  const id = req._id;
+  if(!id) return res.status(401).json({message:'Unauthorized.Log in required'});
+  const user = await User.findById(id).exec();
+  if(!user) return res.status(400).json({message:'User not found'});
+  const shopId = req.params.id;
+  if(!shopId) return res.status(400).json({message:'Shop id Required'});
+  const shop = await Shop.findById(shopId).populate('appointments').exec();
+  if(!shop) return res.status(400).json({message:'Shop not found'});
+  if(id !== shop.user.toString() && !user.roles.includes('1000'))
+  return res.status(403).json({message:'Forbiden'});
+  const package = {
+    appointments : shop.appointments,
+    title : shop.title
+  }
+  res.json({...package});
+})
+
 module.exports = {
   getMyShops,
   createShop,
   updateShop,
   deleteShop,
   getPublicShopPage,
-  makeAppointment
+  retrieveAppointments
 };
