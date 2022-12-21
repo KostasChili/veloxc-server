@@ -37,8 +37,28 @@ const createAppointment = asyncHandler(async(req,res)=>{
     res.json({message:'Appointment created'})
 });
 
+const retrievePublicAppointments = asyncHandler(async (req,res)=>{
+    //get thei id from the requrl
+    const {pathname} =req._parsedOriginalUrl;
+    const id = pathname.replace('/shops/public/appointments/',"")
+    if(!id) return res.status(400).json({message:'shop id required'});
+    const shop = await Shop.findById(id).populate('appointments');
+    if(!shop) return res.status(400).json({message:'no shop was found'});
+    if(!shop.appointments) return res.status(204).json({message:'no appointments where found'})
+    const appList = [];
+    shop.appointments.map((app)=>{
+        appList.push({
+            date:app.date,
+            time:app.time
+        })
+    });
+    res.json(appList);
+
+});
+
 
 
 module.exports={
-    createAppointment    
+    createAppointment,
+    retrievePublicAppointments    
 }

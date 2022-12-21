@@ -6,6 +6,7 @@ const verifyJWT = require('../middleware/verifyJWT');
 
 
 router.route('/')
+.get(appointmentsController.retrievePublicAppointments)
 .post(appointmentsController.createAppointment)
 
 
