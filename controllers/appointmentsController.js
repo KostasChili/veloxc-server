@@ -18,8 +18,14 @@ const createAppointment = asyncHandler(async(req,res)=>{
     {
         return res.status(400).json({message:'All fields required'});
     }
-    const shop = await Shop.findById(id);
+    const shop = await Shop.findById(id).populate('appointments');
+    const occupied = shop.appointments.map((ap=>{
+        console.log(ap.date)
+    }));
+    console.log('occ',occupied)
+    // if(occupied) return res.status(409).json({message:`date ${date} or time ${time} allready booked`})
     if(!shop) return res.status(400).json({message:'No shop found'});
+
     const appointmentObj = {
         shopId:id,
         customerName,
