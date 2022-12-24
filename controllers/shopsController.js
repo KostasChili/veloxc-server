@@ -64,9 +64,9 @@ res.json(shopsWithUser);
 const createShop = asyncHandler(async (req, res) => {
   const id = req._id;
   if(!id) return res.status(401).json({message:'Unauthorized. Log in required'});
-  const {title, description,tel,email,city,address } = req.body;
+  const {title, description,tel,email,city,address,opensAt,closesAt } = req.body;
   //verify data
-  if (!title || !description  || !tel || !email || !city || !address) {
+  if (!title || !description  || !tel || !email || !city || !address || !opensAt || !closesAt) {
     return res.status(400).json({ message: "All input fields are required" });
   }
   //check if user exists in db LATER : if user has roles shopkeeper
@@ -92,7 +92,7 @@ const createShop = asyncHandler(async (req, res) => {
       .json({ message: `Shop with title ${title} allready exists` });
   }
   //if not duplicate create and store the shop
-  const shop = await Shop.create({ user:id, title, description,tel,email,city,address });
+  const shop = await Shop.create({ user:id, title, description,tel,email,city,address,opensAt,closesAt });
   //check if created successfully
   if (shop) {
     const publicLink = `http://localhost:3000/shops/public/${shop._id}`
@@ -110,10 +110,11 @@ const createShop = asyncHandler(async (req, res) => {
 
 const updateShop = asyncHandler(async (req, res) => {
   const userId = req._id;
+  
   if(!userId) return res.status(401).json({message:'Unauthorized. Login required'});
-  const { id, title, description,tel,email,city,address } = req.body;
+  const { id, title, description,tel,email,city,address,closesAt,opensAt } = req.body;
   //verify data
-  if (!id || !title || !description || !tel || !email || !city || !address) {
+  if (!id || !title || !description || !tel || !email || !city || !address || !closesAt || !opensAt) {
     return res.status(400).json({ message: "id and user are required fields" });
   }
   //confirm the Shop exists
@@ -129,6 +130,8 @@ const updateShop = asyncHandler(async (req, res) => {
   shop.email = email;
   shop.cirt = city;
   shop.address = address;
+  shop.closesAt = closesAt;
+  shop.opensAt=opensAt;
 
   const updatedShop = await shop.save();
   res.json({message:`Shop ${updatedShop.title} was successfully updated`});
@@ -137,7 +140,7 @@ const updateShop = asyncHandler(async (req, res) => {
 //@desc delete a Shop
 //@route DELETE /shops
 //@access Private
-
+var set = require('date-fns/set')
 const deleteShop = asyncHandler(async (req, res) => {
   const userId = req._id;
  
@@ -179,7 +182,7 @@ const retrieveAppointments = asyncHandler (async(req,res)=>{
   return res.status(403).json({message:'Forbiden'});
   const package = {
     appointments : shop.appointments,
-    title : shop.title,
+    title:shop.title
   }
   res.json({...package});
 })

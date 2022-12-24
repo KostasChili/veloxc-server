@@ -38,6 +38,14 @@ const shopSchema = new mongoose.Schema({
     ],
     publicLink:{
         type:String
+    },
+    opensAt:{
+        type:String,
+        required:true
+    },
+    closesAt:{
+        type:String,
+        required:true
     }
    
 });

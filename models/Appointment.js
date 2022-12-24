@@ -14,11 +14,18 @@ const appointmentSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    comments:{
+        type:String
+    },
     date:{
         type:String,
         required:true
     },
-    time:{
+    startTime:{
+        type:String,
+        required:true
+    },
+    endTime:{
         type:String,
         required:true
     },
