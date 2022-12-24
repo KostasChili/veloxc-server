@@ -9,7 +9,8 @@ const { addMinutes, getTime, format } = require("date-fns");
 //@access public
 
 const createAppointment = asyncHandler(async (req, res) => {
-  const { id, customerName, service, date, startTime, email,comments } =req.body;
+  const { id, customerName, service, date, startTime, email, comments } =
+    req.body;
 
   if (!id || !customerName || !service || !date || !startTime || !email) {
     return res.status(400).json({ message: "All fields required" });
@@ -29,14 +30,12 @@ const createAppointment = asyncHandler(async (req, res) => {
     customerName,
     service,
     date,
-    comments:comments?comments:"",
+    comments: comments ? comments : "",
     startTime,
     endTime,
     email,
     active: true,
   };
-
-
 
   const appointment = await Appointment.create(appointmentObj);
   if (!appointment) return res.status(400).json({ message: "invalid data" });
@@ -57,6 +56,30 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   if (!shop.appointments)
     return res.status(204).json({ message: "no appointments where found" });
   const appList = [];
+  //Create time slots
+  //This should be implemented on the shop side on the shop creation and update
+  //and stored in the shop model in order to avoid the calculation every time an appointment is made
+  const [hourOp, minuteOp] = shop.opensAt.split(":");
+  const [hourCl, minuteCl] = shop.closesAt.split(":");
+  const totalSlots = Number.parseInt(hourCl) - Number.parseInt(hourOp);
+  let allTimeSlots = [];
+  const parsedOpening = parseInt(hourOp);
+
+  const createTimeslots = () => {
+    for (let i = 0; i < totalSlots; i += 0.5) {
+      if (Number.isInteger(i)) {
+        allTimeSlots.push(`${i + parsedOpening}:00-${i + parsedOpening}:30`);
+      } else {
+        let tempFloor = Math.floor(i);
+        let tempCeil = Math.ceil(i);
+        allTimeSlots.push(
+          `${tempFloor + parsedOpening}:30-${tempCeil + parsedOpening}:00`
+        );
+      }
+    }
+  };
+  createTimeslots();
+
   shop.appointments.map((app) => {
     appList.push({
       date: app.date,
@@ -64,7 +87,7 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
       endTime: app.endTime,
     });
   });
-  res.json(appList);
+  res.json({appList,allTimeSlots});
 });
 
 module.exports = {

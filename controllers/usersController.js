@@ -10,9 +10,13 @@ const bcrypt = require('bcrypt');
 const getAllUsers = asyncHandler(async(req,res)=>{
    const userId = req._id;
    if(!userId) return res.status(401).json({message:'Unauthorized. Login required'});
-   const user = await Users.findById(userId).exec();
+   const user = await User.findById(userId).select('-password').exec();
    if(!user) return res.status(400).json({message:'No such user in db'});
-   if(!user.roles.includes('1000')) return res.status(401).json({message:'Unauthorized. Admin login required'});
+  if(user._id.toString() === userId ){
+    
+    return res.status(200).json(user)
+  }
+  else if(user.roles.includes('1000')){
     const users = await User.find().select('-password').lean();
     //verify data
     if(!users?.length)
@@ -20,6 +24,9 @@ const getAllUsers = asyncHandler(async(req,res)=>{
         return res.status(400).json({message:'No users where found'});
     }
     res.json(users);
+  }
+  else res.status(401).json({message:'You are unauthorized'})
+    
 });
 
 //@desc Create new User
@@ -27,6 +34,8 @@ const getAllUsers = asyncHandler(async(req,res)=>{
 //@access Public
 
 const createUser = asyncHandler(async(req,res)=>{
+       //check if a user is allready logged in in this device
+   if(req.cookies.jwt.length) return res.status(409).json({message:'you must loggout first'}) 
     const {username,firstname,lastname,password,email} = req.body;
     //verify data
     if(!username ||!firstname ||!lastname || !password || !email)

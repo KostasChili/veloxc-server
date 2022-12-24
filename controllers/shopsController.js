@@ -39,7 +39,7 @@ const getMyShops = asyncHandler(async (req, res) => {
       const user = await User.findById(shop.user).lean().exec();
       return {...shop,shopkeeper:user.username}
     }));
-    return res.json({...shopsWithUser});
+    return res.json(shopsWithUser);
   }
   //if the user is not an admin return his shops if any
   const shops = await Shop.find({user:id}).lean().exec();

@@ -9,6 +9,8 @@ const asyncHandler = require('express-async-handler');
 //@access public
 
 const login  = asyncHandler(async (req,res)=>{
+    //check if a user is allready logged in in this device
+   if(req.cookies.jwt.length) return res.status(409).json({message:'you must loggout first'}) 
     const {username,password} = req.body;
     if(!username || !password)
     {
