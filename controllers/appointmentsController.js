@@ -19,25 +19,23 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   if (!shop) return res.status(400).json({ message: "No shop found" });
 
-
-
-  const formDate = date.split("").reverse().join("-");
-
+  var formDate = date.split("-");
+  let tmp;
+  tmp = formDate[2];
+  formDate[2] = formDate[0];
+  formDate[0] = tmp;
+  formDate = formDate.toString().replaceAll(",", "-");
 
   const appDate = new Date(`${formDate}T${startTime}`);
 
   const endDate = addMinutes(appDate, 30);
   const endTime = format(endDate, "HH:mm");
 
-
- 
- 
-
   const appointmentObj = {
     shopId: id,
     customerName,
     service,
-    date:formDate,
+    date: formDate,
     comments: comments ? comments : "",
     startTime,
     endTime,
@@ -76,13 +74,23 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   const createTimeslots = () => {
     for (let i = 0; i < totalSlots; i += 0.5) {
       if (Number.isInteger(i)) {
-        allTimeSlots.push(`${i + parsedOpening}:00-${i + parsedOpening}:30`);
+        if (i + parsedOpening < 10) {
+          allTimeSlots.push(
+            `0${i + parsedOpening}:00-0${i + parsedOpening}:30`
+          );
+        } else if (i + parsedOpening >= 10) {
+          allTimeSlots.push(`${i + parsedOpening}:00-${i + parsedOpening}:30`);
+        }
       } else {
         let tempFloor = Math.floor(i);
         let tempCeil = Math.ceil(i);
-        allTimeSlots.push(
-          `${tempFloor + parsedOpening}:30-${tempCeil + parsedOpening}:00`
-        );
+        if (i + parsedOpening < 10) {
+          `0${tempFloor + parsedOpening}:30-0${tempCeil + parsedOpening}:00`;
+        } else {
+          allTimeSlots.push(
+            `${tempFloor + parsedOpening}:30-${tempCeil + parsedOpening}:00`
+          );
+        }
       }
     }
   };
@@ -95,7 +103,7 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
       endTime: app.endTime,
     });
   });
-  res.json({appList,allTimeSlots});
+  res.json({ appList, allTimeSlots });
 });
 
 module.exports = {
