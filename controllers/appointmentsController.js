@@ -19,17 +19,25 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   if (!shop) return res.status(400).json({ message: "No shop found" });
 
-  const appDate = new Date(`${date}T${startTime}`);
+
+
+  const formDate = date.split("").reverse().join("-");
+
+
+  const appDate = new Date(`${formDate}T${startTime}`);
 
   const endDate = addMinutes(appDate, 30);
-
   const endTime = format(endDate, "HH:mm");
+
+
+ 
+ 
 
   const appointmentObj = {
     shopId: id,
     customerName,
     service,
-    date,
+    date:formDate,
     comments: comments ? comments : "",
     startTime,
     endTime,
