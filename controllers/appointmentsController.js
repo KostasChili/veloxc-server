@@ -55,7 +55,11 @@ const createAppointment = asyncHandler(async (req, res) => {
 const retrievePublicAppointments = asyncHandler(async (req, res) => {
   //get thei id from the requrl
   const { pathname } = req._parsedOriginalUrl;
-  const id = pathname.replace("/shops/public/appointments/", "");
+  const parsedData = pathname
+    .replace("/shops/public/appointments/", "")
+    .split("/");
+  const id = parsedData[0];
+  const date = parsedData[1];
   if (!id) return res.status(400).json({ message: "shop id required" });
   const shop = await Shop.findById(id).populate("appointments");
   if (!shop) return res.status(400).json({ message: "no shop was found" });
@@ -97,11 +101,15 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   createTimeslots();
 
   shop.appointments.map((app) => {
-    appList.push({
-      date: app.date,
-      startTime: app.startTime,
-      endTime: app.endTime,
-    });
+    if(app.date===date)
+    {
+      appList.push({
+        date: app.date,
+        startTime: app.startTime,
+        endTime: app.endTime,
+      });
+    }
+   
   });
   res.json({ appList, allTimeSlots });
 });
