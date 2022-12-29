@@ -11,7 +11,6 @@ const { addMinutes, getTime, format } = require("date-fns");
 const createAppointment = asyncHandler(async (req, res) => {
   const { id, customerName, service, date, startTime, email, comments } =
     req.body;
-
   if (!id || !customerName || !service || !date || !startTime || !email) {
     return res.status(400).json({ message: "All fields required" });
   }
@@ -19,16 +18,24 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   if (!shop) return res.status(400).json({ message: "No shop found" });
 
-  var formDate = date.split("-");
+  var tempDate = date.split("-");
   let tmp;
-  tmp = formDate[2];
-  formDate[2] = formDate[0];
-  formDate[0] = tmp;
-  formDate = formDate.toString().replaceAll(",", "-");
+  tmp = tempDate[2];
+  tempDate[2] = tempDate[0];
+  tempDate[0] = tmp;
+  tempDate = tempDate.toString().replaceAll(",", "-");
+  console.log;
+
+  const temp = tempDate.split("-");
+
+  if (temp[1].length === 1) temp[1] = "0" + temp[1];
+  if (temp[2].length === 1) temp[2] = "0" + temp[2];
+  const formDate = temp.join("-");
 
   const appDate = new Date(`${formDate}T${startTime}`);
 
   const endDate = addMinutes(appDate, 30);
+
   const endTime = format(endDate, "HH:mm");
 
   const appointmentObj = {
@@ -55,6 +62,7 @@ const createAppointment = asyncHandler(async (req, res) => {
 const retrievePublicAppointments = asyncHandler(async (req, res) => {
   //get thei id from the requrl
   const { pathname } = req._parsedOriginalUrl;
+
   const parsedData = pathname
     .replace("/shops/public/appointments/", "")
     .split("/");
@@ -74,7 +82,6 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   const totalSlots = Number.parseInt(hourCl) - Number.parseInt(hourOp);
   let allTimeSlots = [];
   const parsedOpening = parseInt(hourOp);
-
   const createTimeslots = () => {
     for (let i = 0; i < totalSlots; i += 0.5) {
       if (Number.isInteger(i)) {
@@ -100,16 +107,19 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   };
   createTimeslots();
 
+  const tempDate = date.split("-").reverse();
+  if (tempDate[1].length === 1) tempDate[1] = "0" + tempDate[1];
+  if (tempDate[2].length === 1) tempDate[2] = "0" + tempDate[2];
+  const formDate = tempDate.join("-");
+
   shop.appointments.map((app) => {
-    if(app.date===date)
-    {
+    if (app.date === formDate) {
       appList.push({
         date: app.date,
         startTime: app.startTime,
         endTime: app.endTime,
       });
     }
-   
   });
   res.json({ appList, allTimeSlots });
 });
