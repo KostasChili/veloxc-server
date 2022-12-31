@@ -10,6 +10,8 @@ const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/mongoConnect');
 const mongoose = require('mongoose');
+const cron = require ('node-cron');
+const {retrieveAllAppointmentsCron} = require('./scheduler/deactivateAppointments')
 
 const db = mongoose.connection;
 
@@ -61,3 +63,9 @@ db.once('open',()=>{
 db.on('error',err=>{
     logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}\n`,'mongoErrLog.log');
 });
+
+
+cron.schedule('59 * * * * *',()=>{
+   retrieveAllAppointmentsCron ();
+console.log('cron run');
+})
