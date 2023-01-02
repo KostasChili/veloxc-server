@@ -4,7 +4,7 @@ const AutoIncrement = require('mongoose-sequence')(mongoose);
 const appointmentSchema = new mongoose.Schema({
     shopId:{
         type:String,
-        ref:'User'
+        ref:'Shop'
     },
     customerName:{
         type:String,
@@ -33,10 +33,21 @@ const appointmentSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    //used to validate via mail
     active:{
         type:Boolean,
-        default:true
+        default:false
     },
+    //used to check if the app date is past due
+    completed:{
+        type:Boolean,
+        default:false
+    },
+    //used for the shop keeper to keep note if the customer did not attend
+    attended:{
+        type:Boolean,
+        default:true
+    }
    
 },
 {

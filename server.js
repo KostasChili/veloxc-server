@@ -11,7 +11,7 @@ const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/mongoConnect');
 const mongoose = require('mongoose');
 const cron = require ('node-cron');
-const {retrieveAllAppointmentsCron} = require('./scheduler/deactivateAppointments')
+const {completeAppointments} = require('./scheduler/appointmentsScheduler.js')
 
 const db = mongoose.connection;
 
@@ -35,6 +35,8 @@ app.use('/auth',require('./routes/authRoutes'));
 app.use('/users',require('./routes/userRoutes'));
 app.use('/shops',require('./routes/shopRoutes'));
 app.use('/shops/public/appointments/:id/',require('./routes/appointmentsRoutes'))
+app.use('/appointments/verification/',require('./routes/verificationRoutes'))
+
 
 app.all('*',(req,res)=>{
     res.status(404)
@@ -66,6 +68,6 @@ db.on('error',err=>{
 
 
 cron.schedule('59 * * * * *',()=>{
-   retrieveAllAppointmentsCron ();
+    completeAppointments ();
 console.log('cron run');
 })

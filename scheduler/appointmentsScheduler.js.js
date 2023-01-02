@@ -10,7 +10,7 @@ const {
   addMonths,
 } = require("date-fns");
 
-const retrieveAllAppointmentsCron = async () => {
+const completeAppointments = async () => {
   var date = new Date();
   var year = getYear(date);
   var month = getMonth(date) + 1;
@@ -23,32 +23,33 @@ const retrieveAllAppointmentsCron = async () => {
   if (minutes < 10) minutes = "0" + minutes;
 
   const nowFormDate = new Date(`${year}-${month}-${day}T${hour}:${minutes}`);
-  const res = await Appointment.find()
+  const res = await Appointment.find({completed:false})
 
     .select("-shopId -customerName -service -comments -email ")
     .exec();
+    let cancelCounter=0;
     if(!res.length)
     {
       console.log('no apps')
     }
     else
     {
-        let cancelCounter=0;
+        
     await Promise.all(res.map(async (app) => { // <-- wait for all to solve.
       var appFormEndDate = new Date(`${app.date}T${app.endTime}`);
       if(nowFormDate>appFormEndDate)
       {
-          app.active = false;
+          app.completed = true;
           await app.save(); // <-- save only 1 document!
           cancelCounter++;
       }
     }));
     logEvents(`a total of\t${cancelCounter}\t appointments where updated to completed\n`,'appointmentsCron.log');
-    cancelCounter=0;
+    
     }
-
+    cancelCounter=0;
 };
 
 module.exports = {
-  retrieveAllAppointmentsCron,
+  completeAppointments,
 };

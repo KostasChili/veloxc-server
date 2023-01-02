@@ -3,6 +3,8 @@ const Shop = require("../models/Shop");
 const Appointment = require("../models/Appointment");
 const asyncHandler = require("express-async-handler");
 const { addMinutes, getTime, format } = require("date-fns");
+const nodemailer = require('nodemailer');
+const transporter = require('../config/transporter');
 
 //@desc public route to create Appointments
 //@route POST shops/public/appointmens
@@ -47,7 +49,6 @@ const createAppointment = asyncHandler(async (req, res) => {
     startTime,
     endTime,
     email,
-    active: true,
   };
 
   const appointment = await Appointment.create(appointmentObj);
@@ -56,13 +57,33 @@ const createAppointment = asyncHandler(async (req, res) => {
   const shopRes = shop.save();
   if (!shopRes)
     return res.status(400).json({ message: "error saving in shop" });
+
+//send email for verification
+let mailTemplate=  `Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας στο κατάστημα
+${shop.title}, στης ${date} και ώρα ${startTime}-${endTime} για την υπηρεσία ${service}. Τα σχόλια σας για το ραντεβού σας είναι :
+${comments}.Παρακαλούμε για την επιβεβαίσση του ραντεβού σας πατήστε τον παρακάτω σύνδεσμο.
+localhost:5000/appointments/verification/${appointment._id}
+Με εκτίμηση 
+Η ομάδα του Velox Constitutio
+@VeloxC`
+
+// let emailHtml = `${<link href="localhost:5000/appointments/verification/${appointment._id}"><button>Επιβεβαίωση Ραντεβού</button></link>}`
+let info = await transporter.sendMail({
+  from: '"VeloxC - Appointment-Confirm-Service" <appconfirm@veloxc.com>', // sender address
+  to: email, // list of receivers
+  subject: "Επιβεβαίωση Ραντεβού", // Subject line
+  text: mailTemplate, // plain text body
+  //  html: emailHtml, // html body
+});
+console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
   res.json({ message: "Appointment created" });
 });
 
 const retrievePublicAppointments = asyncHandler(async (req, res) => {
   //get thei id from the requrl
   const { pathname } = req._parsedOriginalUrl;
-
+  //params are empty because of the way the router is set TODO -> implement it in a way that params worked. Found and solved this problem on verificationsController
   const parsedData = pathname
     .replace("/shops/public/appointments/", "")
     .split("/");
