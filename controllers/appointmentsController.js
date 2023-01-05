@@ -145,7 +145,22 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   res.json({ appList, allTimeSlots });
 });
 
+const changeAppointmentAttendedStatus = asyncHandler(async(req,res)=>{
+  //this could have been avoided with proper set up of the routing. Lessons learned
+  //a simple const {id} = req.params would do it
+  const { pathname } = req._parsedOriginalUrl;
+  const id = pathname.replace('/shops/public/appointments/','');
+  if(!id) return res.status(400).json({message:'no appointment ID'});
+  const appointment = await Appointment.findOne({_id:id});
+  if(!appointment) return res.status(404).json({message:`no appointment under id ${id}`});
+  appointment.attended = !appointment.attended;
+  const result = appointment.save();
+  if(!result) return res.status(500).json({message:'internal error'});
+  res.json({message:`successfully updated ${appointment.customerName} appointnment to ${appointment.attended}`});
+})
+
 module.exports = {
   createAppointment,
   retrievePublicAppointments,
+  changeAppointmentAttendedStatus
 };

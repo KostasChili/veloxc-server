@@ -11,7 +11,10 @@ router.route('/:date')
 //public route to create appointment
 //full route: /shops/public/appointments/:id/
 router.route('/')
+.get(verifyJWT,appointmentsController.changeAppointmentAttendedStatus)
 .post(appointmentsController.createAppointment)
+
+
 
 
 
