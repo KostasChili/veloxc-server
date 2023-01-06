@@ -3,8 +3,8 @@ const Shop = require("../models/Shop");
 const Appointment = require("../models/Appointment");
 const asyncHandler = require("express-async-handler");
 const { addMinutes, getTime, format } = require("date-fns");
-const nodemailer = require('nodemailer');
-const transporter = require('../config/transporter');
+const nodemailer = require("nodemailer");
+const transporter = require("../config/transporter");
 
 //@desc public route to create Appointments
 //@route POST shops/public/appointmens
@@ -58,24 +58,48 @@ const createAppointment = asyncHandler(async (req, res) => {
   if (!shopRes)
     return res.status(400).json({ message: "error saving in shop" });
 
-//send email for verification
-let mailTemplate=  `Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας στο κατάστημα
+  //send email for verification
+  let mailTemplate = `Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας στο κατάστημα
 ${shop.title}, στης ${date} και ώρα ${startTime}-${endTime} για την υπηρεσία ${service}. Τα σχόλια σας για το ραντεβού σας είναι :
 ${comments}.Παρακαλούμε για την επιβεβαίσση του ραντεβού σας πατήστε τον παρακάτω σύνδεσμο.
 localhost:5000/appointments/verification/${appointment._id}
 Με εκτίμηση 
 Η ομάδα του Velox Constitutio
-@VeloxC`
+@VeloxC`;
 
-// let emailHtml = `${<link href="localhost:5000/appointments/verification/${appointment._id}"><button>Επιβεβαίωση Ραντεβού</button></link>}`
-let info = await transporter.sendMail({
-  from: '"VeloxC - Appointment-Confirm-Service" <appconfirm@veloxc.com>', // sender address
-  to: email, // list of receivers
-  subject: "Επιβεβαίωση Ραντεβού", // Subject line
-  text: mailTemplate, // plain text body
-  //  html: emailHtml, // html body
-});
-console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  let htmlTemplate = (
+    <div>
+      <p>
+        Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας
+        στο κατάστημα ${shop.title}
+      </p>{" "}
+      <p>
+        Ημερομηνία: ${date} και ώρα ${startTime}-${endTime}{" "}
+      </p>
+      <p>Υπηρεσία: ${service}</p>
+      <p> Τα σχόλια σας για το ραντεβού σας είναι : ${comments}</p>
+      <p>
+        Παρακαλούμε για την επιβεβαίσση του ραντεβού σας πατήστε τον παρακάτω
+        σύνδεσμο.
+      </p>
+      <a>localhost:5000/appointments/verification/${appointment._id}</a>
+      <br />
+      Με εκτίμηση <br />
+      Η ομάδα του Velox Constitutio
+      <br />
+      @VeloxC
+    </div>
+  );
+
+  // let emailHtml = `${<link href="localhost:5000/appointments/verification/${appointment._id}"><button>Επιβεβαίωση Ραντεβού</button></link>}`
+  let info = await transporter.sendMail({
+    from: '"VeloxC - Appointment-Confirm-Service" <appconfirm@veloxc.com>', // sender address
+    to: email, // list of receivers
+    subject: "Επιβεβαίωση Ραντεβού", // Subject line
+    text: mailTemplate, // plain text body
+    html: htmlTemplate, // html body
+  });
+  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 
   res.json({ message: "Appointment created" });
 });
@@ -145,22 +169,25 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   res.json({ appList, allTimeSlots });
 });
 
-const changeAppointmentAttendedStatus = asyncHandler(async(req,res)=>{
+const changeAppointmentAttendedStatus = asyncHandler(async (req, res) => {
   //this could have been avoided with proper set up of the routing. Lessons learned
   //a simple const {id} = req.params would do it
   const { pathname } = req._parsedOriginalUrl;
-  const id = pathname.replace('/shops/public/appointments/','');
-  if(!id) return res.status(400).json({message:'no appointment ID'});
-  const appointment = await Appointment.findOne({_id:id});
-  if(!appointment) return res.status(404).json({message:`no appointment under id ${id}`});
+  const id = pathname.replace("/shops/public/appointments/", "");
+  if (!id) return res.status(400).json({ message: "no appointment ID" });
+  const appointment = await Appointment.findOne({ _id: id });
+  if (!appointment)
+    return res.status(404).json({ message: `no appointment under id ${id}` });
   appointment.attended = !appointment.attended;
   const result = appointment.save();
-  if(!result) return res.status(500).json({message:'internal error'});
-  res.json({message:`successfully updated ${appointment.customerName} appointnment to ${appointment.attended}`});
-})
+  if (!result) return res.status(500).json({ message: "internal error" });
+  res.json({
+    message: `successfully updated ${appointment.customerName} appointnment to ${appointment.attended}`,
+  });
+});
 
 module.exports = {
   createAppointment,
   retrievePublicAppointments,
-  changeAppointmentAttendedStatus
+  changeAppointmentAttendedStatus,
 };
