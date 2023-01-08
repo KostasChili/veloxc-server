@@ -14,7 +14,7 @@ const getAllUsers = asyncHandler(async(req,res)=>{
    if(!user) return res.status(400).json({message:'No such user in db'});
   if(user._id.toString() === userId ){
     
-    return res.status(200).json(user)
+return res.status(200).json([user])
   }
   else if(user.roles.includes('1000')){
     const users = await User.find().select('-password').lean();

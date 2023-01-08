@@ -1,4 +1,5 @@
 const Appointment = require("../models/Appointment");
+const Shop = require('../models/Shop');
 const {logEvents} = require('../middleware/logger');
 
 const {
@@ -8,6 +9,7 @@ const {
   getYear,
   getMonth,
   addMonths,
+  addMinutes,
 } = require("date-fns");
 
 const completeAppointments = async () => {
@@ -50,6 +52,52 @@ const completeAppointments = async () => {
     cancelCounter=0;
 };
 
+
+const cancelNonConfirmed = async ()=>{
+  var date = new Date();
+  var year = getYear(date);
+  var month = getMonth(date) + 1;
+  var day = getDate(date);
+  var hour = getHours(date);
+  var minutes = getMinutes(date);
+  if (month < 10) month = "0" + month;
+  if (day < 10) day = "0" + day;
+  if (hour < 10) hour = "0" + hour;
+  if (minutes < 10) minutes = "0" + minutes;
+
+  const nowFormDate = new Date(`${year}-${month}-${day}T${hour}:${minutes}`);
+  const res = await Appointment.find({active:false})
+
+    .select("-shopId -customerName -service -comments -email ")
+    .exec();
+
+    let cancelCounter=0;
+    if(!res.length)
+    {
+      console.log('no apps')
+    }
+    else
+    {
+        
+    await Promise.all(res.map(async (app) => { // <-- wait for all to solve.
+      var checkDate = addMinutes(app.createdAt,5)
+      if(nowFormDate>checkDate)
+      {
+         await app.deleteOne();
+         cancelCounter++;
+      }
+    }));
+    logEvents(`a total of\t${cancelCounter}\t appointments where deleted\n`,'appointmentsCron.log');
+    
+    }
+    cancelCounter=0;
+    
+
+    
+}
+
 module.exports = {
   completeAppointments,
+  cancelNonConfirmed
+
 };

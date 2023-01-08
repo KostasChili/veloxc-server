@@ -67,29 +67,29 @@ localhost:5000/appointments/verification/${appointment._id}
 Η ομάδα του Velox Constitutio
 @VeloxC`;
 
-  let htmlTemplate = (
-    <div>
-      <p>
-        Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας
-        στο κατάστημα ${shop.title}
-      </p>{" "}
-      <p>
-        Ημερομηνία: ${date} και ώρα ${startTime}-${endTime}{" "}
-      </p>
-      <p>Υπηρεσία: ${service}</p>
-      <p> Τα σχόλια σας για το ραντεβού σας είναι : ${comments}</p>
-      <p>
-        Παρακαλούμε για την επιβεβαίσση του ραντεβού σας πατήστε τον παρακάτω
-        σύνδεσμο.
-      </p>
-      <a>localhost:5000/appointments/verification/${appointment._id}</a>
-      <br />
-      Με εκτίμηση <br />
-      Η ομάδα του Velox Constitutio
-      <br />
-      @VeloxC
-    </div>
-  );
+  // let htmlTemplate = (
+  //   <div>
+  //     <p>
+  //       Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας
+  //       στο κατάστημα ${shop.title}
+  //     </p>{" "}
+  //     <p>
+  //       Ημερομηνία: ${date} και ώρα ${startTime}-${endTime}{" "}
+  //     </p>
+  //     <p>Υπηρεσία: ${service}</p>
+  //     <p> Τα σχόλια σας για το ραντεβού σας είναι : ${comments}</p>
+  //     <p>
+  //       Παρακαλούμε για την επιβεβαίσση του ραντεβού σας πατήστε τον παρακάτω
+  //       σύνδεσμο.
+  //     </p>
+  //     <a>localhost:5000/appointments/verification/${appointment._id}</a>
+  //     <br />
+  //     Με εκτίμηση <br />
+  //     Η ομάδα του Velox Constitutio
+  //     <br />
+  //     @VeloxC
+  //   </div>
+  // );
 
   // let emailHtml = `${<link href="localhost:5000/appointments/verification/${appointment._id}"><button>Επιβεβαίωση Ραντεβού</button></link>}`
   let info = await transporter.sendMail({
@@ -97,7 +97,7 @@ localhost:5000/appointments/verification/${appointment._id}
     to: email, // list of receivers
     subject: "Επιβεβαίωση Ραντεβού", // Subject line
     text: mailTemplate, // plain text body
-    html: htmlTemplate, // html body
+    //html: htmlTemplate, // html body
   });
   console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 
