@@ -47,6 +47,10 @@ const appointmentSchema = new mongoose.Schema({
     attended:{
         type:Boolean,
         default:true
+    },
+    cancelled:{
+        type:Boolean,
+        default:false
     }
    
 },

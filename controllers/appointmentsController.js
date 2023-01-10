@@ -158,7 +158,7 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
   const formDate = tempDate.join("-");
 
   shop.appointments.map((app) => {
-    if (app.date === formDate) {
+    if (app.date === formDate && !app.cancelled) {
       appList.push({
         date: app.date,
         startTime: app.startTime,
@@ -167,6 +167,15 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
     }
   });
   res.json({ appList, allTimeSlots });
+});
+
+const retrieveOneAppointmentDetails = asyncHandler(async(req,res)=>{
+const { pathname } = req._parsedOriginalUrl;
+const id = pathname.replace("/appointments/", "");
+if(!id) return res.status(400).json({message:'no appointment id'});
+const result = await Appointment.findOne({_id:id});
+if(!result) return res.status(400).json({message:`no appointment under id ${id}`})
+res.json(result)
 });
 
 const changeAppointmentAttendedStatus = asyncHandler(async (req, res) => {
@@ -190,4 +199,5 @@ module.exports = {
   createAppointment,
   retrievePublicAppointments,
   changeAppointmentAttendedStatus,
+  retrieveOneAppointmentDetails
 };

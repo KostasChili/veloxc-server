@@ -181,7 +181,7 @@ const retrieveAppointments = asyncHandler (async(req,res)=>{
   if(id !== shop.user.toString() && !user.roles.includes('1000'))
   return res.status(403).json({message:'Forbiden'});
   const package = {
-    appointments : shop.appointments,
+    appointments : !shop.appointments.cancelled?shop.appointments:null,
     title:shop.title
   }
   res.json({...package});
