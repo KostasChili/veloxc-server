@@ -10,6 +10,8 @@ const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
 const connectDB = require('./config/mongoConnect');
 const mongoose = require('mongoose');
+const cron = require ('node-cron');
+const {completeAppointments} = require('./scheduler/appointmentsScheduler.js')
 
 const db = mongoose.connection;
 
@@ -29,8 +31,13 @@ app.use('/',express.static(path.join(__dirname,'public'))); //where express will
 
 app.use('/',require('./routes/root'));
 
+app.use('/auth',require('./routes/authRoutes'));
 app.use('/users',require('./routes/userRoutes'));
-app.use('/shops',require('./routes/shopRouter'));
+app.use('/shops',require('./routes/shopRoutes'));
+app.use('/appointments',require('./routes/appointmentDetailsRoutes'));
+app.use('/shops/public/appointments/:id/',require('./routes/appointmentsRoutes'))
+app.use('/appointments/verification/',require('./routes/verificationRoutes'))
+
 
 app.all('*',(req,res)=>{
     res.status(404)
@@ -59,3 +66,9 @@ db.once('open',()=>{
 db.on('error',err=>{
     logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}\n`,'mongoErrLog.log');
 });
+
+
+cron.schedule('59 * * * * *',()=>{
+    completeAppointments ();
+console.log('cron run');
+})
