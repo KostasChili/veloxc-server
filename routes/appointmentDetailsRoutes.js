@@ -7,5 +7,8 @@ const appointmentsController = require('../controllers/appointmentsController');
 router.route(verifyJWT,'/:appId')
 .get(appointmentsController.retrieveOneAppointmentDetails)
 
+router.route(verifyJWT,'/:appId/cancel')
+.get(appointmentsController.cancelAppointmentStatus)
+
 
 module.exports = router;

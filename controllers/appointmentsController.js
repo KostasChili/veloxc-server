@@ -195,9 +195,27 @@ const changeAppointmentAttendedStatus = asyncHandler(async (req, res) => {
   });
 });
 
+const cancelAppointmentStatus = asyncHandler(async (req,res)=>{
+  const { pathname } = req._parsedOriginalUrl;
+  console.log(pathname)
+  const id = pathname.replace("/appointments", "");
+  console.log(id)
+  if (!id) return res.status(400).json({ message: "no appointment ID" });
+  const appointment = await Appointment.findOne({_id:id});
+  if (!appointment)
+  return res.status(404).json({ message: `no appointment under id ${id}` });
+appointment.cancelled = true;
+const result = appointment.save();
+if (!result) return res.status(500).json({ message: "internal error" });
+res.json({
+  message: `successfully cancelled ${appointment.customerName} appointnment`,
+});
+})
+
 module.exports = {
   createAppointment,
   retrievePublicAppointments,
   changeAppointmentAttendedStatus,
-  retrieveOneAppointmentDetails
+  retrieveOneAppointmentDetails,
+  cancelAppointmentStatus
 };
