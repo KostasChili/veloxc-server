@@ -171,7 +171,7 @@ const retrievePublicAppointments = asyncHandler(async (req, res) => {
 
 const retrieveOneAppointmentDetails = asyncHandler(async(req,res)=>{
 const { pathname } = req._parsedOriginalUrl;
-const id = pathname.replace("/appointments/", "");
+const id = pathname.replace("/appointment/", "");
 if(!id) return res.status(400).json({message:'no appointment id'});
 const result = await Appointment.findOne({_id:id});
 if(!result) return res.status(400).json({message:`no appointment under id ${id}`})

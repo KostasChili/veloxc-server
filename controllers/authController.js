@@ -10,7 +10,7 @@ const asyncHandler = require('express-async-handler');
 
 const login  = asyncHandler(async (req,res)=>{
     //check if a user is allready logged in in this device
-   if(req.cookies.jwt.length) return res.status(409).json({message:'you must loggout first'}) 
+//    if(req.cookies.jwt.length) return res.status(409).json({message:'you must loggout first'}) 
     const {username,password} = req.body;
     if(!username || !password)
     {
@@ -58,6 +58,7 @@ const login  = asyncHandler(async (req,res)=>{
 
 
 const refresh = asyncHandler (async(req,res)=>{
+    console.log('Hit refresh')
     const cookies = req.cookies;
     if(!cookies?.jwt) return res.status(401).json({message:'Unauthorized'});
 
@@ -92,6 +93,7 @@ const refresh = asyncHandler (async(req,res)=>{
 //@access public  - to clear the jwt cookie if it exists
 
 const logout = asyncHandler(async (req,res)=>{
+    console.log('Hit logout')
     const cookies = req.cookies;
     if(!cookies?.jwt) return res.sendStatus(204); // no content
     res.clearCookie('jwt',{

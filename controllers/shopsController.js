@@ -26,6 +26,7 @@ const getPublicShopPage = asyncHandler(async(req,res)=>{
 //@access Private
 
 const getMyShops = asyncHandler(async (req, res) => {
+
   const id = req._id;
   if(!id) return res.status(401).json({message:'Unauthorized. Login required'});
   const user  = await User.findById(id);

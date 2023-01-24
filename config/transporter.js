@@ -11,6 +11,6 @@ const nodemailer = require('nodemailer');
       pass: process.env.ETHEREAL_PASSWORD, // generated ethereal password
     },
   });
-
+console.log('mailer run')
 
   module.exports = transporter;

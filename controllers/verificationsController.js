@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 
 
 const verifyAppointment = asyncHandler(async(req,res)=>{
+    console.log('here i am veri')
     const {id}= req.params;
     if(!id) return res.status(400).json({message:'appointment id required'});
     const result = await Appointment.findOne({_id:id}).populate('shopId').exec();
