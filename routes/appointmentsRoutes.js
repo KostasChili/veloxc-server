@@ -14,9 +14,4 @@ router.route('/')
 .get(verifyJWT,appointmentsController.changeAppointmentAttendedStatus)
 .post(appointmentsController.createAppointment)
 
-
-
-
-
-
 module.exports = router;

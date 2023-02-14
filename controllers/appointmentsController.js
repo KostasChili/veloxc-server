@@ -66,7 +66,6 @@ localhost:5000/appointments/verification/${appointment._id}
 Με εκτίμηση 
 Η ομάδα του Velox Constitutio
 @VeloxC`;
-
   // let htmlTemplate = (
   //   <div>
   //     <p>
