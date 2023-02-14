@@ -70,5 +70,4 @@ db.on('error',err=>{
 
 cron.schedule('59 * * * * *',()=>{
     completeAppointments ();
-console.log('cron run');
 })

@@ -59,7 +59,7 @@ const createAppointment = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "error saving in shop" });
 
   //send email for verification
-  let mailTemplate = `Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας στο κατάστημα
+let mailTemplate = `Καλησπέρα, Έιστε ένα κλικ μακρία από την επιβεβαίωση του ραντεβού σας στο κατάστημα
 ${shop.title}, στης ${date} και ώρα ${startTime}-${endTime} για την υπηρεσία ${service}. Τα σχόλια σας για το ραντεβού σας είναι :
 ${comments}.Παρακαλούμε για την επιβεβαίσση του ραντεβού σας πατήστε τον παρακάτω σύνδεσμο.
 localhost:5000/appointments/verification/${appointment._id}
